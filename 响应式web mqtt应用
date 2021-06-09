@@ -1,0 +1,103 @@
+/*!
+ * MindPlus
+ * mpython
+ *
+ */
+#include <MPython.h>
+#include <DFRobot_Iot.h>
+// 函数声明
+void obloqMqttEventT1(String& message);
+void obloqMqttEventT0(String& message);
+void obloqMqttEventT2(String& message);
+void obloqMqttEventT3(String& message);
+void obloqMqttEventT4(String& message);
+// 静态常量
+const String topics[5] = {"2018324128/Red","2018324128/Green","2018324128/Blue","2018324128/Beep","2018324128/all"};
+const MsgHandleCb msgHandles[5] = {obloqMqttEventT0,obloqMqttEventT1,obloqMqttEventT2,obloqMqttEventT3,obloqMqttEventT4};
+// 创建对象
+DFRobot_Iot myIot;
+
+
+// 主程序开始
+void setup() {
+	mPython.begin();
+	myIot.setMqttCallback(msgHandles);
+	myIot.wifiConnect("DAV", "2018324128");
+	while (!myIot.wifiStatus()) {yield();}
+	display.setCursorLine(1);
+	display.printLine("Wi-Fi连接成功！");
+	myIot.init("192.168.43.152","siot","","dfrobot", topics, 1883);
+	myIot.connect();
+	while (!myIot.connected()) {yield();}
+	display.setCursorLine(2);
+	display.printLine("SIOT连接成功！");
+	delay(3000);
+	display.fillScreen(0);
+}
+void loop() {
+
+}
+
+// 事件回调函数
+void obloqMqttEventT1(String& message) {
+	if ((message==String("ledGreenOn"))) {
+		rgb.write(1, 0x00FF00);
+		display.setCursorLine(1);
+		display.printLine(message);
+	}
+	if ((message==String("ledGreenOff"))) {
+		rgb.write(1, 0x000000);
+		display.setCursorLine(2);
+		display.printLine(message);
+	}
+}
+void obloqMqttEventT0(String& message) {
+	if ((message==String("ledRedOn"))) {
+		rgb.write(0, 0xFF0000);
+		display.setCursorLine(1);
+		display.printLine(message);
+	}
+	if ((message==String("ledRedOff"))) {
+		rgb.write(0, 0x000000);
+		display.setCursorLine(2);
+		display.printLine(message);
+	}
+}
+void obloqMqttEventT2(String& message) {
+	if ((message==String("ledBlueOn"))) {
+		rgb.write(2, 0x0000FF);
+		display.setCursorLine(1);
+		display.printLine(message);
+	}
+	if ((message==String("ledBlueOff"))) {
+		rgb.write(2, 0x000000);
+		display.setCursorLine(2);
+		display.printLine(message);
+	}
+}
+void obloqMqttEventT3(String& message) {
+	if ((message==String("On"))) {
+		buzz.freq(131);
+		display.setCursorLine(1);
+		display.printLine(message);
+	}
+	else {
+		buzz.stop();
+		display.setCursorLine(2);
+		display.printLine(message);
+	}
+}
+void obloqMqttEventT4(String& message) {
+	if ((message==String("全亮"))) {
+		rgb.write(0, 0xFF0000);
+		rgb.write(1, 0x00FF00);
+		rgb.write(2, 0x0000FF);
+		display.setCursorLine(1);
+		display.printLine("全亮");
+	}
+	else {
+		rgb.write(-1, 0x000000);
+		display.setCursorLine(2);
+		display.printLine("全灭");
+	}
+}
